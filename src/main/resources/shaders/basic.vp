@@ -1,0 +1,22 @@
+#version 330
+
+layout(location = 0) in vec4 position;
+layout(location = 1) in vec4 colour;
+
+uniform float rot;
+
+out vec4 interpolatedColour;
+
+vec4 rotate(vec4 v, float rads) {
+    return vec4(v.x * cos(rads) - v.y * sin(rads), v.x * sin(rads) + v.y * cos(rads), v.z, v.w);
+}
+
+void main() {
+    float rads = radians(mod(rot, 360.0));
+    gl_Position = rotate(position, rads);
+    interpolatedColour = colour;
+
+    //gl_Position = position;
+    //interpolatedColour = abs(rotate(colour, rads));
+}
+
