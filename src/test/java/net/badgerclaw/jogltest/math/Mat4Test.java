@@ -109,7 +109,10 @@ public class Mat4Test {
                 -56, 49, -40, -17).scalar(1f / 588f))); // Expected value from Wolfram Alpha, thanks!
     }
 
-    // TODO transform a vec2
+    @Test
+    public void transform() {
+        assertThat(a.transform(new Vec4(10, 20, 30, 40)), is(new Vec4(300, 600, 900, 1200)));
+    }
 
     //@Test
     public void timing() {

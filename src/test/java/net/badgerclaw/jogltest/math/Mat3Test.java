@@ -92,7 +92,10 @@ public class Mat3Test {
         assertThat(b.invert(), is(new Mat3(-2, -4, 3, -2, 11, -6, 3, -6, 3).scalar(1f / 6f))); // Expected value from Wolfram Alpha, thanks!
     }
 
-    // TODO transform a vec2
+    @Test
+    public void transform() {
+        assertThat(a.transform(new Vec3(10, 20, 30)), is(new Vec3(1*10 + 2*20 + 3*30, 4*10 + 5*20 + 6*30, 7*10 + 8*20 + 9*30)));
+    }
 
     public void timing() {
         final Mat3 matrix = new Mat3();

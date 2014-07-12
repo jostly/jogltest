@@ -2,24 +2,17 @@ package net.badgerclaw.jogltest.math;
 
 import java.util.Arrays;
 
-public abstract class SquareMatrix<T extends SquareMatrix> {
+public abstract class AbstractMatrix<SelfType extends AbstractMatrix, D extends Dimensionality> implements Dimensionality {
 
-    final float[] m = new float[size() * size()];
-
-    /**
-     * The size of the matrix is the number of rows (or columns) it has
-     *
-     * @return the size of this matrix
-     */
-    abstract int size();
+    final public float[] m = new float[dimensions() * dimensions()];
 
     /**
-     * Copies the elements of this matrix into another matrix of the same size
+     * Copies the elements of this matrix into another matrix of the same dimensions
      *
      * @param dest the matrix to copy elements to
      * @return dest
      */
-    public T copyTo(T dest) {
+    public SelfType copyTo(SelfType dest) {
         System.arraycopy(m, 0, dest.m, 0, m.length);
         return dest;
     }
@@ -29,10 +22,10 @@ public abstract class SquareMatrix<T extends SquareMatrix> {
      *
      * @return this matrix object - the operation modifies the original object
      */
-    public T identity() {
+    public SelfType identity() {
         float[] m = this.m;
         int n = m.length;
-        int s = size() + 1;
+        int s = dimensions() + 1;
         for (int i = 0; i < n; i++) {
             if (i % s == 0) {
                 m[i] = 1f;
@@ -40,7 +33,7 @@ public abstract class SquareMatrix<T extends SquareMatrix> {
                 m[i] = 0f;
             }
         }
-        return (T) this;
+        return (SelfType) this;
     }
 
     /**
@@ -50,14 +43,14 @@ public abstract class SquareMatrix<T extends SquareMatrix> {
      * @param that the matrix to add to this
      * @return this matrix object - the operation modifies the original object
      */
-    public T add(T that) {
+    public SelfType add(SelfType that) {
         float[] a = this.m;
         float[] b = that.m;
         float n = a.length;
         for (int i = 0; i < n; i++) {
             a[i] += b[i];
         }
-        return (T) this;
+        return (SelfType) this;
     }
 
     /**
@@ -67,14 +60,14 @@ public abstract class SquareMatrix<T extends SquareMatrix> {
      * @param that the matrix to subtract from this
      * @return this matrix object - the operation modifies the original object
      */
-    public T sub(T that) {
+    public SelfType sub(SelfType that) {
         float[] a = this.m;
         float[] b = that.m;
         float n = a.length;
         for (int i = 0; i < n; i++) {
             a[i] -= b[i];
         }
-        return (T) this;
+        return (SelfType) this;
     }
 
     /**
@@ -84,11 +77,11 @@ public abstract class SquareMatrix<T extends SquareMatrix> {
      * @param that matrix to multiply this by
      * @return this matrix object - the operation modifies the original object
      */
-    public T mul(T that) {
+    public SelfType mul(SelfType that) {
         float[] a = this.m;
         float[] b = that.m;
         float[] temp = new float[a.length];
-        int s = size();
+        int s = dimensions();
 
         for (int row = 0; row < s; row++) {
             for (int col = 0; col < s; col++) {
@@ -100,7 +93,23 @@ public abstract class SquareMatrix<T extends SquareMatrix> {
         }
         System.arraycopy(temp, 0, a, 0, a.length);
 
-        return (T) this;
+        return (SelfType) this;
+    }
+
+    public AbstractVector<?, D> transform(AbstractVector<?, D> vector) {
+        float[] m = this.m;
+        float[] v = vector.v;
+        int n = v.length;
+        float[] temp = new float[v.length];
+
+        for (int row = 0; row < n; row++) {
+            for (int k = 0; k < n; k++) {
+                temp[row] += m[k*n + row] * v[k];
+            }
+        }
+        System.arraycopy(temp, 0, v, 0, v.length);
+
+        return vector;
     }
 
     /**
@@ -109,13 +118,13 @@ public abstract class SquareMatrix<T extends SquareMatrix> {
      * @param scalar
      * @return this matrix object - the operation modifies the original object
      */
-    public T scalar(float scalar) {
+    public SelfType scalar(float scalar) {
         float[] m = this.m;
         int n = m.length;
         for (int i = 0; i < n; i++) {
             m[i] *= scalar;
         }
-        return (T) this;
+        return (SelfType) this;
     }
 
     /**
@@ -123,13 +132,13 @@ public abstract class SquareMatrix<T extends SquareMatrix> {
      *
      * @return this matrix object - the operation modifies the original object
      */
-    public T neg() {
+    public SelfType neg() {
         float[] m = this.m;
         int n = m.length;
         for (int i = 0; i < n; i++) {
             m[i] = -m[i];
         }
-        return (T) this;
+        return (SelfType) this;
     }
 
     /**
@@ -137,9 +146,9 @@ public abstract class SquareMatrix<T extends SquareMatrix> {
      *
      * @return this matrix object - the operation modifies the original object
      */
-    public T transpose() {
+    public SelfType transpose() {
         float[] m = this.m;
-        int s = size();
+        int s = dimensions();
         for (int row = 0; row < s; row++) {
             for (int col = row + 1; col < s; col++) {
                 float t = m[col * s + row];
@@ -147,7 +156,7 @@ public abstract class SquareMatrix<T extends SquareMatrix> {
                 m[row * s + col] = t;
             }
         }
-        return (T) this;
+        return (SelfType) this;
     }
 
     /**
@@ -162,14 +171,14 @@ public abstract class SquareMatrix<T extends SquareMatrix> {
      *
      * @return this matrix object - the operation modifies the original object
      */
-    abstract public T invert();
+    abstract public SelfType invert();
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        SquareMatrix matrix = (SquareMatrix) o;
+        AbstractMatrix matrix = (AbstractMatrix) o;
 
         if (!Arrays.equals(m, matrix.m)) return false;
 
@@ -184,7 +193,7 @@ public abstract class SquareMatrix<T extends SquareMatrix> {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("\n");
-        int s = size();
+        int s = dimensions();
         for (int row = 0; row < s; row++) {
             sb.append("| ");
             for (int col = 0; col < s; col++) {

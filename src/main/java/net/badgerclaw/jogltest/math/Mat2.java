@@ -9,7 +9,7 @@ package net.badgerclaw.jogltest.math;
  * The backing array storage is in column-major order (OpenGL default), so that shaders
  * can use transforms with vector on the right ( v' = M * v )
  */
-public class Mat2 extends SquareMatrix<Mat2> implements Cloneable {
+public class Mat2 extends AbstractMatrix<Mat2, Dimensionality2> implements Dimensionality2, Cloneable {
     final public static int
             M00 = 0,
             M10 = 1,
@@ -103,11 +103,6 @@ public class Mat2 extends SquareMatrix<Mat2> implements Cloneable {
     @Override
     public float getDeterminant() {
         return m[M00] * m[M11] - m[M01] * m[M10];
-    }
-
-    @Override
-    public int size() {
-        return 2;
     }
 
     @Override

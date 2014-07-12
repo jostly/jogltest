@@ -85,7 +85,10 @@ public class Mat2Test {
         assertThat(a.invert(), is(new Mat2(-7f, 3f, 5f, -1f).scalar(1f/8f))); // Expected value from Wolfram Alpha, thanks!
     }
 
-    // TODO transform a vec2
+    @Test
+    public void transform() {
+        assertThat(a.transform(new Vec2(10, 20)), is(new Vec2(1*10 + 3*20, 5*10 + 7*20)));
+    }
 
     //@Test
     public void timing() {

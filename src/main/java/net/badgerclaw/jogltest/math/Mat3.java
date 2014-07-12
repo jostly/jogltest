@@ -1,6 +1,6 @@
 package net.badgerclaw.jogltest.math;
 
-public class Mat3 extends SquareMatrix<Mat3> {
+public class Mat3 extends AbstractMatrix<Mat3, Dimensionality3> implements Dimensionality3, Cloneable {
     final public static int
             M00 = 0,
             M10 = 1,
@@ -148,10 +148,6 @@ public class Mat3 extends SquareMatrix<Mat3> {
     @Override
     protected Mat3 clone() {
         return copyTo(new Mat3());
-    }
-
-    public int size() {
-        return 3;
     }
 
 }
