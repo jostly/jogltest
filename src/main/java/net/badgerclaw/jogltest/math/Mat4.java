@@ -138,6 +138,14 @@ public class Mat4 extends AbstractMatrix<Mat4, Dimensionality4> implements Dimen
         return copyTo(new Mat4());
     }
 
+    public Mat3 toMat3() {
+        return new Mat3(
+                m[M00], m[M01], m[M02],
+                m[M10], m[M11], m[M12],
+                m[M20], m[M21], m[M22]
+        );
+    }
+
     public static Mat4 identity() {
         return new Mat4().setIdentity();
     }

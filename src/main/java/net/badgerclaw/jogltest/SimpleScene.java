@@ -57,6 +57,37 @@ public class SimpleScene implements GLEventListener {
             -1.0f, -1.0f, +1.0f,
             -1.0f, -1.0f, -1.0f,
             -1.0f, +1.0f, -1.0f,
+
+            // Normals
+            0f, 0f, 1f,
+            0f, 0f, 1f,
+            0f, 0f, 1f,
+            0f, 0f, 1f,
+
+            0f, 1f, 0f,
+            0f, 1f, 0f,
+            0f, 1f, 0f,
+            0f, 1f, 0f,
+
+            1f, 0f, 0f,
+            1f, 0f, 0f,
+            1f, 0f, 0f,
+            1f, 0f, 0f,
+
+            0f, 0f, -1f,
+            0f, 0f, -1f,
+            0f, 0f, -1f,
+            0f, 0f, -1f,
+
+            0f, -1f, 0f,
+            0f, -1f, 0f,
+            0f, -1f, 0f,
+            0f, -1f, 0f,
+
+            -1f, 0f, 0f,
+            -1f, 0f, 0f,
+            -1f, 0f, 0f,
+            -1f, 0f, 0f,
             //
             GREEN_COLOR[0], GREEN_COLOR[1], GREEN_COLOR[2], GREEN_COLOR[3],
             GREEN_COLOR[0], GREEN_COLOR[1], GREEN_COLOR[2], GREEN_COLOR[3],
@@ -156,7 +187,11 @@ public class SimpleScene implements GLEventListener {
             gl3.glEnableVertexAttribArray(0);
             gl3.glVertexAttribPointer(0, 3, GL3.GL_FLOAT, false, 0, 0);
 
-            int colorDataOffset = numberOfVertices * 3 * 4;
+            int normalDataOffset = numberOfVertices * 3 * 4;
+            gl3.glEnableVertexAttribArray(2);
+            gl3.glVertexAttribPointer(2, 3, GL3.GL_FLOAT, false, 0, normalDataOffset);
+
+            int colorDataOffset = numberOfVertices * 3 * 4 + normalDataOffset;
             gl3.glEnableVertexAttribArray(1);
             gl3.glVertexAttribPointer(1, 4, GL3.GL_FLOAT, false, 0, colorDataOffset);
         }
@@ -204,22 +239,27 @@ public class SimpleScene implements GLEventListener {
         gl3.glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         gl3.glClear(GL3.GL_COLOR_BUFFER_BIT | GL3.GL_DEPTH_BUFFER_BIT);
 
+        Mat4 cameraToClipMatrix = Mat4.perspectiveProjection(fieldOfView, aspectRatio);
+        gl3.glBindBuffer(GL3.GL_UNIFORM_BUFFER, uniformBufferObject[0]);
+        gl3.glBufferSubData(GL3.GL_UNIFORM_BUFFER, 0, 16 * 4, cameraToClipMatrix.toBuffer());
+        gl3.glBindBuffer(GL3.GL_UNIFORM_BUFFER, 0);
+
         program.useProgram(gl3, true);
         {
-            gl3.glBindBuffer(GL3.GL_UNIFORM_BUFFER, uniformBufferObject[0]);
-            gl3.glBufferSubData(GL3.GL_UNIFORM_BUFFER, 0, 16 * 4, Mat4.perspectiveProjection(fieldOfView, aspectRatio).toBuffer());
-            gl3.glBindBuffer(GL3.GL_UNIFORM_BUFFER, 0);
-
             gl3.glBindVertexArray(vertexArrayObject[0]);
-            //setUniform(gl3, "cameraToClipMatrix", Mat4.perspectiveProjection(fieldOfView, aspectRatio));
+
+            Mat4 ground = Mat4.translation(0, -4f, 0f)
+                    .mul(Mat4.scaling(100f, 0.1f, 100f));
+            setUniform(gl3, "modelToCameraMatrix", ground);
+            setUniform(gl3, "normalModelToCameraMatrix", ground.toMat3());
+            gl3.glDrawElements(GL3.GL_TRIANGLES, indexData.length, GL3.GL_UNSIGNED_INT, 0);
 
             Mat4 m1 = Mat4.translation(0f, 0f, -4f)
-                    .mul(Mat4.rotation(new Vec3(1f, 0.2f, 0.7f).normalize(), time))
+                    .mul(Mat4.rotation(new Vec3(1f, 0.0f, 1f).normalize(), time*0.7f))
                     .push()
-                    .mul(Mat4.rotation(0, 1, 0, (float) Math.PI))
                     .mul(Mat4.scaling(1f, 1f, 0.2f));
-
             setUniform(gl3, "modelToCameraMatrix", m1);
+            setUniform(gl3, "normalModelToCameraMatrix", m1.toMat3());
             gl3.glDrawElements(GL3.GL_TRIANGLES, indexData.length, GL3.GL_UNSIGNED_INT, 0);
 
             m1 = m1.pop()
@@ -227,6 +267,7 @@ public class SimpleScene implements GLEventListener {
                     .mul(Mat4.scaling(0.25f, 0.25f, 1f))
                     .mul(Mat4.rotation(new Vec3(0f, 0f, 1f), time*4.2f));
             setUniform(gl3, "modelToCameraMatrix", m1);
+            setUniform(gl3, "normalModelToCameraMatrix", m1.toMat3());
             gl3.glDrawElements(GL3.GL_TRIANGLES, indexData.length, GL3.GL_UNSIGNED_INT, 0);
         }
         program.useProgram(gl3, false);
