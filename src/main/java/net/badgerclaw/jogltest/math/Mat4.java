@@ -146,6 +146,30 @@ public class Mat4 extends AbstractMatrix<Mat4, Dimensionality4> implements Dimen
         );
     }
 
+    public Vec3 transform(Vec3 vector) {
+        float[] m = this.m;
+        float[] v = vector.v;
+
+        float x = m[M00] * v[Vec3.X] + m[M01] * v[Vec3.Y] + m[M02] * v[Vec3.Z];
+        float y = m[M10] * v[Vec3.X] + m[M11] * v[Vec3.Y] + m[M12] * v[Vec3.Z];
+        float z = m[M20] * v[Vec3.X] + m[M21] * v[Vec3.Y] + m[M22] * v[Vec3.Z];
+
+        v[Vec3.X] = x;
+        v[Vec3.Y] = y;
+        v[Vec3.Z] = z;
+        return vector;
+    }
+
+    public Mat4 setColumn(int col, Vec3 vector) {
+        float[] m = this.m;
+        float[] v = vector.v;
+
+        for (int row = 0; row < 3; row++) {
+            m[col * 4 + row] = v[row];
+        }
+        return this;
+    }
+
     public static Mat4 identity() {
         return new Mat4().setIdentity();
     }

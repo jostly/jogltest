@@ -23,7 +23,14 @@ public class Main {
         window.setSize(500, 500);
         window.setVisible(true);
         window.setTitle("NEWT Window Test");
-        window.addGLEventListener(new SimpleScene());
+        SimpleScene simpleScene = new SimpleScene(window);
+        window.addGLEventListener(simpleScene);
+        window.addKeyListener(simpleScene);
+        window.addMouseListener(simpleScene);
+        window.requestFocus();
+        window.confinePointer(true);
+        window.setPointerVisible(false);
+        window.addWindowListener(simpleScene);
 
         final FPSAnimator animator = new FPSAnimator(window, 60);
         animator.start();

@@ -1,19 +1,24 @@
 package net.badgerclaw.jogltest;
 
+import com.jogamp.newt.event.*;
+import com.jogamp.newt.opengl.GLWindow;
 import com.jogamp.opengl.util.GLBuffers;
 import com.jogamp.opengl.util.glsl.ShaderCode;
 import com.jogamp.opengl.util.glsl.ShaderProgram;
 import net.badgerclaw.jogltest.math.AbstractMatrix;
 import net.badgerclaw.jogltest.math.Mat4;
+import net.badgerclaw.jogltest.math.Vec2;
 import net.badgerclaw.jogltest.math.Vec3;
 
+import javax.media.nativewindow.util.Point;
 import javax.media.opengl.GL2ES2;
 import javax.media.opengl.GL3;
 import javax.media.opengl.GLAutoDrawable;
 import javax.media.opengl.GLEventListener;
+import java.awt.*;
 import java.nio.IntBuffer;
 
-public class SimpleScene implements GLEventListener {
+public class SimpleScene implements GLEventListener, KeyListener, MouseListener, WindowListener {
 
     private ShaderProgram program = new ShaderProgram();
 
@@ -149,8 +154,33 @@ public class SimpleScene implements GLEventListener {
 
     private final int globalMatricesBindingIndex = 0;
 
+    private boolean moveForward, moveBackward, strafeLeft, strafeRight;
+    private Vec3 cameraPosition = new Vec3(0, 0, 8);
+
+    private Vec3 cameraForward = new Vec3(0, 0, 1);
+    private Vec3 cameraRight = new Vec3(1, 0, 0);
+    private Vec3 cameraUp = new Vec3(0, 1, 0);
+    private Vec2 lastMousePosition = new Vec2();
+    private float mouseDeltaX, mouseDeltaY;
+    private Object mouseSyncLock = new Object();
+
+    private int centerX, centerY;
+    private int top, left;
+
+    private Robot robot;
+
+    public SimpleScene(GLWindow window) {
+        try {
+            robot = new Robot();
+        } catch (AWTException e) {
+            e.printStackTrace();
+        }
+        recalcCenter(window);
+    }
+
     @Override
     public void init(GLAutoDrawable drawable) {
+
         GL3 gl3 = drawable.getGL().getGL3();
 
         gl3.glGenBuffers(1, uniformBufferObject, 0);
@@ -234,6 +264,44 @@ public class SimpleScene implements GLEventListener {
     public void display(GLAutoDrawable drawable) {
         float time = (System.currentTimeMillis() - startingTime) / 1000f;
 
+        float speed = time * 0.03f;
+
+        if (moveForward) {
+            cameraPosition.add(cameraForward.clone().scalar(-speed));
+        }
+        if (moveBackward) {
+            cameraPosition.sub(cameraForward.clone().scalar(-speed));
+        }
+        if (strafeLeft) {
+            cameraPosition.sub(cameraRight.clone().scalar(speed));
+        }
+        if (strafeRight) {
+            cameraPosition.add(cameraRight.clone().scalar(speed));
+        }
+
+        float rotationSpeed = time * 0.001f;
+
+        synchronized (mouseSyncLock) {
+            Mat4 rotation = Mat4.rotation(0, 1, 0, -mouseDeltaX * rotationSpeed);
+            //Mat4.rotation(1, 0, 0, mouseDeltaY * rotationSpeed);
+            rotation.transform(cameraForward);
+            rotation.transform(cameraRight);
+            rotation.transform(cameraUp);
+            cameraForward.normalize();
+            cameraRight.normalize();
+            cameraUp.normalize();
+
+            rotation = Mat4.rotation(cameraRight, -mouseDeltaY * rotationSpeed);
+
+            rotation.transform(cameraForward);
+            rotation.transform(cameraUp);
+            cameraForward.normalize();
+            cameraUp.normalize();
+
+            mouseDeltaY = 0;
+            mouseDeltaX = 0;
+        }
+
         GL3 gl3 = drawable.getGL().getGL3();
 
         gl3.glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
@@ -244,30 +312,40 @@ public class SimpleScene implements GLEventListener {
         gl3.glBufferSubData(GL3.GL_UNIFORM_BUFFER, 0, 16 * 4, cameraToClipMatrix.toBuffer());
         gl3.glBindBuffer(GL3.GL_UNIFORM_BUFFER, 0);
 
+        Mat4 worldToCamera = Mat4.identity();
+        worldToCamera.setColumn(0, cameraRight);
+        worldToCamera.setColumn(1, cameraUp);
+        worldToCamera.setColumn(2, cameraForward);
+        worldToCamera.setColumn(3, cameraPosition);
+
+        Mat4 worldToCameraInverse = worldToCamera.clone().invert();
+
         program.useProgram(gl3, true);
         {
+
             gl3.glBindVertexArray(vertexArrayObject[0]);
 
-            Mat4 ground = Mat4.translation(0, -4f, 0f)
+            Mat4 ground = worldToCameraInverse.clone()
+                    .mul(Mat4.translation(0, -4f, 0f))
                     .mul(Mat4.scaling(100f, 0.1f, 100f));
             setUniform(gl3, "modelToCameraMatrix", ground);
-            setUniform(gl3, "normalModelToCameraMatrix", ground.toMat3());
+            setUniform(gl3, "normalModelToCameraMatrix", worldToCamera.clone().mul(ground).toMat3());
             gl3.glDrawElements(GL3.GL_TRIANGLES, indexData.length, GL3.GL_UNSIGNED_INT, 0);
 
-            Mat4 m1 = Mat4.translation(0f, 0f, -4f)
-                    .mul(Mat4.rotation(new Vec3(1f, 0.0f, 1f).normalize(), time*0.7f))
+            Mat4 m1 = worldToCameraInverse.clone()
+                    .mul(Mat4.rotation(new Vec3(1f, 0.0f, 1f).normalize(), time * 0.7f))
                     .push()
                     .mul(Mat4.scaling(1f, 1f, 0.2f));
             setUniform(gl3, "modelToCameraMatrix", m1);
-            setUniform(gl3, "normalModelToCameraMatrix", m1.toMat3());
+            setUniform(gl3, "normalModelToCameraMatrix", worldToCamera.clone().mul(m1).toMat3());
             gl3.glDrawElements(GL3.GL_TRIANGLES, indexData.length, GL3.GL_UNSIGNED_INT, 0);
 
             m1 = m1.pop()
                     .mul(Mat4.translation(0f, 0f, 1.2f))
                     .mul(Mat4.scaling(0.25f, 0.25f, 1f))
-                    .mul(Mat4.rotation(new Vec3(0f, 0f, 1f), time*4.2f));
+                    .mul(Mat4.rotation(new Vec3(0f, 0f, 1f), time * 4.2f));
             setUniform(gl3, "modelToCameraMatrix", m1);
-            setUniform(gl3, "normalModelToCameraMatrix", m1.toMat3());
+            setUniform(gl3, "normalModelToCameraMatrix", worldToCamera.clone().mul(m1).toMat3());
             gl3.glDrawElements(GL3.GL_TRIANGLES, indexData.length, GL3.GL_UNSIGNED_INT, 0);
         }
         program.useProgram(gl3, false);
@@ -278,7 +356,7 @@ public class SimpleScene implements GLEventListener {
         if (id == -1) {
             throw new IllegalArgumentException("Invalid uniform parameter " + name);
         }
-        switch(matrix.dimensions()) {
+        switch (matrix.dimensions()) {
             case 2:
                 gl3.glUniformMatrix2fv(id, 1, false, matrix.m, 0);
                 break;
@@ -293,7 +371,7 @@ public class SimpleScene implements GLEventListener {
         }
     }
 
-    private void setUniform(GL3 gl3, String name, float ... val) {
+    private void setUniform(GL3 gl3, String name, float... val) {
         int id = gl3.glGetUniformLocation(program.id(), name);
         if (id == -1) {
             System.err.println("Warning: Invalid uniform parameter " + name);
@@ -322,5 +400,136 @@ public class SimpleScene implements GLEventListener {
         aspectRatio = (float) width / (float) height;
         GL3 gl3 = drawable.getGL().getGL3();
         gl3.glViewport(x, y, width, height);
+    }
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+        switch (e.getKeyChar()) {
+            case 'w':
+                moveForward = true;
+                break;
+            case 's':
+                moveBackward = true;
+                break;
+            case 'a':
+                strafeLeft = true;
+                break;
+            case 'd':
+                strafeRight = true;
+                break;
+        }
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e) {
+        switch (e.getKeyChar()) {
+            case 'w':
+                moveForward = false;
+                break;
+            case 's':
+                moveBackward = false;
+                break;
+            case 'a':
+                strafeLeft = false;
+                break;
+            case 'd':
+                strafeRight = false;
+                break;
+        }
+
+    }
+
+    @Override
+    public void mouseClicked(MouseEvent e) {
+
+    }
+
+    @Override
+    public void mouseEntered(MouseEvent e) {
+        robot.mouseMove(centerX, centerY);
+    }
+
+    @Override
+    public void mouseExited(MouseEvent e) {
+
+    }
+
+    @Override
+    public void mousePressed(MouseEvent e) {
+
+    }
+
+    @Override
+    public void mouseReleased(MouseEvent e) {
+
+    }
+
+    @Override
+    public void mouseMoved(MouseEvent e) {
+        int dx = e.getX() - centerX;
+        int dy = e.getY() - centerY;
+        if (dx != 0 || dy != 0) {
+            synchronized (mouseSyncLock) {
+                mouseDeltaX += dx;
+                mouseDeltaY += dy;
+            }
+            robot.mouseMove(centerX + left, centerY + top);
+        }
+    }
+
+    private void recalcCenter(GLWindow window) {
+        Point p = new Point();
+        window.getLocationOnScreen(p);
+
+        left = window.getX();//p.getX();
+        centerX = left + window.getWidth() / 2;
+        top = window.getY();//p.getY();
+        centerY = top + window.getHeight() / 2;
+
+    }
+
+    @Override
+    public void mouseDragged(MouseEvent e) {
+
+    }
+
+    @Override
+    public void mouseWheelMoved(MouseEvent e) {
+
+    }
+
+    @Override
+    public void windowResized(WindowEvent e) {
+        recalcCenter((GLWindow) e.getSource());
+    }
+
+    @Override
+    public void windowMoved(WindowEvent e) {
+        recalcCenter((GLWindow) e.getSource());
+    }
+
+    @Override
+    public void windowDestroyNotify(WindowEvent e) {
+
+    }
+
+    @Override
+    public void windowDestroyed(WindowEvent e) {
+
+    }
+
+    @Override
+    public void windowGainedFocus(WindowEvent e) {
+
+    }
+
+    @Override
+    public void windowLostFocus(WindowEvent e) {
+
+    }
+
+    @Override
+    public void windowRepaint(WindowUpdateEvent e) {
+
     }
 }
