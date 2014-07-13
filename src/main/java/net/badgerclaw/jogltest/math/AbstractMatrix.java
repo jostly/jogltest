@@ -2,9 +2,10 @@ package net.badgerclaw.jogltest.math;
 
 import java.util.Arrays;
 
-public abstract class AbstractMatrix<SelfType extends AbstractMatrix, D extends Dimensionality> implements Dimensionality {
+public abstract class AbstractMatrix<SelfType extends AbstractMatrix, D extends Dimensionality> implements Dimensionality, Cloneable {
 
     final public float[] m = new float[dimensions() * dimensions()];
+    SelfType next;
 
     /**
      * Copies the elements of this matrix into another matrix of the same dimensions
@@ -172,6 +173,37 @@ public abstract class AbstractMatrix<SelfType extends AbstractMatrix, D extends 
      * @return this matrix object - the operation modifies the original object
      */
     abstract public SelfType invert();
+
+    /**
+     * Clone this matrix elements, but NOT any push():ed state
+     *
+     * @return a matrix with the same elements as this matrix
+     */
+    abstract public SelfType clone();
+
+    /**
+     * Store the current matrix state on a stack, which can later be retrieved by calling pop()
+     *
+     * @return a clone of this matrix
+     */
+    public SelfType push() {
+        SelfType m1 = this.clone();
+        m1.next = this;
+        return m1;
+    }
+
+    /**
+     * Retrieve the last stored matrix state
+     *
+     * @return the last matrix state stored with push()
+     * @throws java.lang.IllegalStateException if there are no stored matrix states
+     */
+    public SelfType pop() {
+        if (next == null) {
+            throw new IllegalStateException("Called pop() on an empty stack");
+        }
+        return next;
+    }
 
     @Override
     public boolean equals(Object o) {

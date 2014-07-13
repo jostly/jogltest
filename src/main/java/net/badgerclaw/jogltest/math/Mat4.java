@@ -3,7 +3,7 @@ package net.badgerclaw.jogltest.math;
 /**
  * 4x4 matrix of floats
  */
-public class Mat4 extends AbstractMatrix<Mat4, Dimensionality4> implements Dimensionality4, Cloneable {
+public class Mat4 extends AbstractMatrix<Mat4, Dimensionality4> implements Dimensionality4 {
     final public static int
             M00 = 0,
             M10 = 1,
@@ -21,7 +21,6 @@ public class Mat4 extends AbstractMatrix<Mat4, Dimensionality4> implements Dimen
             M13 = 13,
             M23 = 14,
             M33 = 15;
-
 
     public Mat4() {
     }

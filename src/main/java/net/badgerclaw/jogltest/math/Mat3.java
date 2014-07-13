@@ -146,8 +146,7 @@ public class Mat3 extends AbstractMatrix<Mat3, Dimensionality3> implements Dimen
     }
 
     @Override
-    protected Mat3 clone() {
+    public Mat3 clone() {
         return copyTo(new Mat3());
     }
-
 }

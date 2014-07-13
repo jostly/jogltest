@@ -7,8 +7,10 @@ import net.badgerclaw.jogltest.math.AbstractMatrix;
 import net.badgerclaw.jogltest.math.Mat4;
 import net.badgerclaw.jogltest.math.Vec3;
 
-import javax.media.opengl.*;
-import java.nio.FloatBuffer;
+import javax.media.opengl.GL2ES2;
+import javax.media.opengl.GL3;
+import javax.media.opengl.GLAutoDrawable;
+import javax.media.opengl.GLEventListener;
 import java.nio.IntBuffer;
 
 public class SimpleScene implements GLEventListener {
@@ -202,9 +204,22 @@ public class SimpleScene implements GLEventListener {
 
         program.useProgram(gl3, true);
         {
-            setUniform(gl3, "cameraToClipMatrix", calcPerspectiveMatrix());
-            setUniform(gl3, "modelToCameraMatrix", calcTranslationMatrix(0, 0, -5).mul(calcRotationMatrix(time)));
             gl3.glBindVertexArray(vertexArrayObject[0]);
+            setUniform(gl3, "cameraToClipMatrix", calcPerspectiveMatrix());
+
+            Mat4 m1 = calcTranslationMatrix(0, 0, -10)
+                    .mul(calcRotationMatrix(new Vec3(1, 0, 0.3f), time))
+                    .push()
+                    .mul(calcScaleMatrix(1f, 1f, 0.2f));
+
+            setUniform(gl3, "modelToCameraMatrix", m1);
+            gl3.glDrawElements(GL3.GL_TRIANGLES, indexData.length, GL3.GL_UNSIGNED_INT, 0);
+
+            m1 = m1.pop()
+                    .mul(calcTranslationMatrix(0, 0, 1.2f))
+                    .mul(calcScaleMatrix(0.25f, 0.25f, 1f))
+                    .mul(calcRotationMatrix(new Vec3(0, 0, 1), time*4.2f));
+            setUniform(gl3, "modelToCameraMatrix", m1);
             gl3.glDrawElements(GL3.GL_TRIANGLES, indexData.length, GL3.GL_UNSIGNED_INT, 0);
         }
         program.useProgram(gl3, false);
@@ -220,8 +235,17 @@ public class SimpleScene implements GLEventListener {
         return matrix;
     }
 
-    private Mat4 calcRotationMatrix(float time) {
-        Mat4 rotationMatrix = Mat4.rotation(new Vec3(1, 1, 0).normalize(), time);
+    private Mat4 calcScaleMatrix(float xScale, float yScale, float zScale) {
+        Mat4 matrix = new Mat4();
+        matrix.m[Mat4.M00] = xScale;
+        matrix.m[Mat4.M11] = yScale;
+        matrix.m[Mat4.M22] = zScale;
+        matrix.m[Mat4.M33] = 1f;
+        return matrix;
+    }
+
+    private Mat4 calcRotationMatrix(Vec3 axis, float time) {
+        Mat4 rotationMatrix = Mat4.rotation(axis.normalize(), time);
 
         return rotationMatrix;
     }
