@@ -111,13 +111,21 @@ public class SimpleScene implements GLEventListener {
 
     private int[] bufferObject = new int[2];
     private int[] vertexArrayObject = new int[1];
+    private int[] uniformBufferObject = new int[1];
 
     private float aspectRatio = 1f;
     private final float fieldOfView = 80f;
 
+    private final int globalMatricesBindingIndex = 0;
+
     @Override
     public void init(GLAutoDrawable drawable) {
         GL3 gl3 = drawable.getGL().getGL3();
+
+        gl3.glGenBuffers(1, uniformBufferObject, 0);
+        gl3.glBindBuffer(GL3.GL_UNIFORM_BUFFER, uniformBufferObject[0]);
+        gl3.glBufferData(GL3.GL_UNIFORM_BUFFER, 16 * 4, null, GL3.GL_STREAM_DRAW);
+        gl3.glBindBuffer(GL3.GL_UNIFORM_BUFFER, 0);
 
         buildShaders(gl3);
 
@@ -173,6 +181,13 @@ public class SimpleScene implements GLEventListener {
         program.add(gl3, fragment, System.out);
 
         program.link(gl3, System.out);
+
+        int programId = program.id();
+
+        int globalUniformBlockIndex = gl3.glGetUniformBlockIndex(programId, "GlobalMatrices");
+        gl3.glUniformBlockBinding(programId, globalUniformBlockIndex, globalMatricesBindingIndex);
+
+        gl3.glBindBufferRange(GL3.GL_UNIFORM_BUFFER, globalMatricesBindingIndex, uniformBufferObject[0], 0, 16 * 4);
     }
 
     @Override
@@ -191,13 +206,17 @@ public class SimpleScene implements GLEventListener {
 
         program.useProgram(gl3, true);
         {
+            gl3.glBindBuffer(GL3.GL_UNIFORM_BUFFER, uniformBufferObject[0]);
+            gl3.glBufferSubData(GL3.GL_UNIFORM_BUFFER, 0, 16 * 4, Mat4.perspectiveProjection(fieldOfView, aspectRatio).toBuffer());
+            gl3.glBindBuffer(GL3.GL_UNIFORM_BUFFER, 0);
+
             gl3.glBindVertexArray(vertexArrayObject[0]);
-            setUniform(gl3, "cameraToClipMatrix", Mat4.perspectiveProjection(fieldOfView, aspectRatio));
+            //setUniform(gl3, "cameraToClipMatrix", Mat4.perspectiveProjection(fieldOfView, aspectRatio));
 
             Mat4 m1 = Mat4.translation(0f, 0f, -4f)
                     .mul(Mat4.rotation(new Vec3(1f, 0.2f, 0.7f).normalize(), time))
                     .push()
-                    .mul(Mat4.rotation(0, 1, 0, (float)Math.PI))
+                    .mul(Mat4.rotation(0, 1, 0, (float) Math.PI))
                     .mul(Mat4.scaling(1f, 1f, 0.2f));
 
             setUniform(gl3, "modelToCameraMatrix", m1);

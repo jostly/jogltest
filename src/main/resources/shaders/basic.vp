@@ -3,7 +3,11 @@
 layout(location = 0) in vec4 position;
 layout(location = 1) in vec4 colour;
 
-uniform mat4 cameraToClipMatrix;
+layout(std140) uniform GlobalMatrices
+{
+    mat4 cameraToClipMatrix;
+};
+
 uniform mat4 modelToCameraMatrix;
 
 out vec4 interpolatedColour;

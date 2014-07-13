@@ -1,5 +1,6 @@
 package net.badgerclaw.jogltest.math;
 
+import java.nio.FloatBuffer;
 import java.util.Arrays;
 
 public abstract class AbstractMatrix<SelfType extends AbstractMatrix, D extends Dimensionality> implements Dimensionality, Cloneable {
@@ -203,6 +204,15 @@ public abstract class AbstractMatrix<SelfType extends AbstractMatrix, D extends 
             throw new IllegalStateException("Called pop() on an empty stack");
         }
         return next;
+    }
+
+    /**
+     * Returns a FloatBuffer wrapping the matrix array
+     *
+     * @return FloatBuffer with the matrix elements
+     */
+    public FloatBuffer toBuffer() {
+        return FloatBuffer.wrap(m);
     }
 
     @Override
