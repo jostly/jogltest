@@ -3,10 +3,10 @@ package net.badgerclaw.jogltest;
 import com.jogamp.newt.event.WindowAdapter;
 import com.jogamp.newt.event.WindowEvent;
 import com.jogamp.newt.opengl.GLWindow;
-import com.jogamp.opengl.util.Animator;
 import com.jogamp.opengl.util.FPSAnimator;
 
-import javax.media.opengl.*;
+import javax.media.opengl.GLCapabilities;
+import javax.media.opengl.GLProfile;
 
 public class Main {
     static {
@@ -20,7 +20,7 @@ public class Main {
         System.err.println("Caps: " + caps);
 
         GLWindow window = GLWindow.create(caps);
-        window.setSize(300, 300);
+        window.setSize(500, 500);
         window.setVisible(true);
         window.setTitle("NEWT Window Test");
         window.addGLEventListener(new SimpleScene());

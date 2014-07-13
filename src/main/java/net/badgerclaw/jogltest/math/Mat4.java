@@ -74,18 +74,18 @@ public class Mat4 extends AbstractMatrix<Mat4, Dimensionality4> implements Dimen
 
     /**
      * Calculate the determinant of a 3x3 matrix
+     *
      * @return result
      */
 
     private float determinant3x3(float t00, float t01, float t02,
-                                        float t10, float t11, float t12,
-                                        float t20, float t21, float t22)
-    {
-        return   t00 * (t11 * t22 - t12 * t21)
+                                 float t10, float t11, float t12,
+                                 float t20, float t21, float t22) {
+        return t00 * (t11 * t22 - t12 * t21)
                 + t01 * (t12 * t20 - t10 * t22)
                 + t02 * (t10 * t21 - t11 * t20);
     }
-    
+
     @Override
     public Mat4 invert() {
         float[] m = this.m;
@@ -93,43 +93,43 @@ public class Mat4 extends AbstractMatrix<Mat4, Dimensionality4> implements Dimen
         float determinant_inv = 1f / determinant;
 
         // first row
-        float t00 =  determinant3x3(m[M11], m[M12], m[M13], m[M21], m[M22], m[M23], m[M31], m[M32], m[M33]);
+        float t00 = determinant3x3(m[M11], m[M12], m[M13], m[M21], m[M22], m[M23], m[M31], m[M32], m[M33]);
         float t01 = -determinant3x3(m[M10], m[M12], m[M13], m[M20], m[M22], m[M23], m[M30], m[M32], m[M33]);
-        float t02 =  determinant3x3(m[M10], m[M11], m[M13], m[M20], m[M21], m[M23], m[M30], m[M31], m[M33]);
+        float t02 = determinant3x3(m[M10], m[M11], m[M13], m[M20], m[M21], m[M23], m[M30], m[M31], m[M33]);
         float t03 = -determinant3x3(m[M10], m[M11], m[M12], m[M20], m[M21], m[M22], m[M30], m[M31], m[M32]);
         // second row
         float t10 = -determinant3x3(m[M01], m[M02], m[M03], m[M21], m[M22], m[M23], m[M31], m[M32], m[M33]);
-        float t11 =  determinant3x3(m[M00], m[M02], m[M03], m[M20], m[M22], m[M23], m[M30], m[M32], m[M33]);
+        float t11 = determinant3x3(m[M00], m[M02], m[M03], m[M20], m[M22], m[M23], m[M30], m[M32], m[M33]);
         float t12 = -determinant3x3(m[M00], m[M01], m[M03], m[M20], m[M21], m[M23], m[M30], m[M31], m[M33]);
-        float t13 =  determinant3x3(m[M00], m[M01], m[M02], m[M20], m[M21], m[M22], m[M30], m[M31], m[M32]);
+        float t13 = determinant3x3(m[M00], m[M01], m[M02], m[M20], m[M21], m[M22], m[M30], m[M31], m[M32]);
         // third row
-        float t20 =  determinant3x3(m[M01], m[M02], m[M03], m[M11], m[M12], m[M13], m[M31], m[M32], m[M33]);
+        float t20 = determinant3x3(m[M01], m[M02], m[M03], m[M11], m[M12], m[M13], m[M31], m[M32], m[M33]);
         float t21 = -determinant3x3(m[M00], m[M02], m[M03], m[M10], m[M12], m[M13], m[M30], m[M32], m[M33]);
-        float t22 =  determinant3x3(m[M00], m[M01], m[M03], m[M10], m[M11], m[M13], m[M30], m[M31], m[M33]);
+        float t22 = determinant3x3(m[M00], m[M01], m[M03], m[M10], m[M11], m[M13], m[M30], m[M31], m[M33]);
         float t23 = -determinant3x3(m[M00], m[M01], m[M02], m[M10], m[M11], m[M12], m[M30], m[M31], m[M32]);
         // fourth row
         float t30 = -determinant3x3(m[M01], m[M02], m[M03], m[M11], m[M12], m[M13], m[M21], m[M22], m[M23]);
-        float t31 =  determinant3x3(m[M00], m[M02], m[M03], m[M10], m[M12], m[M13], m[M20], m[M22], m[M23]);
+        float t31 = determinant3x3(m[M00], m[M02], m[M03], m[M10], m[M12], m[M13], m[M20], m[M22], m[M23]);
         float t32 = -determinant3x3(m[M00], m[M01], m[M03], m[M10], m[M11], m[M13], m[M20], m[M21], m[M23]);
-        float t33 =  determinant3x3(m[M00], m[M01], m[M02], m[M10], m[M11], m[M12], m[M20], m[M21], m[M22]);
+        float t33 = determinant3x3(m[M00], m[M01], m[M02], m[M10], m[M11], m[M12], m[M20], m[M21], m[M22]);
 
         // transpose and divide by the determinant
-        m[M00] = t00*determinant_inv;
-        m[M11] = t11*determinant_inv;
-        m[M22] = t22*determinant_inv;
-        m[M33] = t33*determinant_inv;
-        m[M01] = t10*determinant_inv;
-        m[M10] = t01*determinant_inv;
-        m[M20] = t02*determinant_inv;
-        m[M02] = t20*determinant_inv;
-        m[M12] = t21*determinant_inv;
-        m[M21] = t12*determinant_inv;
-        m[M03] = t30*determinant_inv;
-        m[M30] = t03*determinant_inv;
-        m[M13] = t31*determinant_inv;
-        m[M31] = t13*determinant_inv;
-        m[M32] = t23*determinant_inv;
-        m[M23] = t32*determinant_inv;
+        m[M00] = t00 * determinant_inv;
+        m[M11] = t11 * determinant_inv;
+        m[M22] = t22 * determinant_inv;
+        m[M33] = t33 * determinant_inv;
+        m[M01] = t10 * determinant_inv;
+        m[M10] = t01 * determinant_inv;
+        m[M20] = t02 * determinant_inv;
+        m[M02] = t20 * determinant_inv;
+        m[M12] = t21 * determinant_inv;
+        m[M21] = t12 * determinant_inv;
+        m[M03] = t30 * determinant_inv;
+        m[M30] = t03 * determinant_inv;
+        m[M13] = t31 * determinant_inv;
+        m[M31] = t13 * determinant_inv;
+        m[M32] = t23 * determinant_inv;
+        m[M23] = t32 * determinant_inv;
         return this;
     }
 
@@ -142,35 +142,111 @@ public class Mat4 extends AbstractMatrix<Mat4, Dimensionality4> implements Dimen
         return new Mat4().setIdentity();
     }
 
-    public static Mat4 rotation(Vec3 axis, float angle) {
+    /**
+     * Create a matrix describing a rotation around an arbitrary axis
+     *
+     * @param x     the x component of the rotation axis
+     * @param y     the y component of the rotation axis
+     * @param z     the z component of the rotation axis
+     * @param angle the angle of rotation around the axis
+     * @return a matrix describing the rotation
+     */
+    public static Mat4 rotation(final float x, final float y, final float z, final float angle) {
         Mat4 matrix = new Mat4();
-        final float s = (float)Math.sin(angle);
-        final float c = (float)Math.cos(angle);
-        final float is = 1f - s;
+        final float s = (float) Math.sin(angle);
+        final float c = (float) Math.cos(angle);
         final float ic = 1f - c;
-        final float[] v = axis.v;
-        final float x = v[Vec3.X];
-        final float x2 = x * x;
-        final float y = v[Vec3.Y];
-        final float y2 = y * y;
-        final float z = v[Vec3.Z];
-        final float z2 = z * z;
+        final float xSquared = x * x;
+        final float ySquared = y * y;
+        final float zSquared = z * z;
         final float[] m = matrix.m;
 
-        m[M00] = x2 + (1 - x2)*c;
-        m[M01] = ic*x*y - z*s;
-        m[M02] = ic*x*z + y*s;
+        m[M00] = xSquared + (1 - xSquared) * c;
+        m[M01] = ic * x * y - z * s;
+        m[M02] = ic * x * z + y * s;
 
-        m[M10] = ic*x*y + z*s;
-        m[M11] = y2 + (1 - y2)*c;
-        m[M12] = ic*y*z - x*s;
+        m[M10] = ic * x * y + z * s;
+        m[M11] = ySquared + (1 - ySquared) * c;
+        m[M12] = ic * y * z - x * s;
 
-        m[M20] = ic*x*z - y*s;
-        m[M21] = ic*y*z + x*s;
-        m[M22] = z2 + (1 - z2)*c;
+        m[M20] = ic * x * z - y * s;
+        m[M21] = ic * y * z + x * s;
+        m[M22] = zSquared + (1 - zSquared) * c;
 
         m[M33] = 1;
 
         return matrix;
+    }
+
+    /**
+     * Create a matrix describing a rotation around an arbitrary axis
+     *
+     * @param axis  the rotation axis
+     * @param angle the angle of rotation around the axis
+     * @return a matrix describing the rotation
+     */
+    public static Mat4 rotation(Vec3 axis, float angle) {
+        return rotation(axis.v[Vec3.X], axis.v[Vec3.Y], axis.v[Vec3.Z], angle);
+    }
+
+    /**
+     * Create a matrix describing a translation
+     *
+     * @param x the x component of the translation
+     * @param y the y component of the translation
+     * @param z the z component of the translation
+     * @return a matrix describing the translation
+     */
+    public static Mat4 translation(float x, float y, float z) {
+        Mat4 matrix = identity();
+
+        float[] m = matrix.m;
+        m[M03] = x;
+        m[M13] = y;
+        m[M23] = z;
+
+        return matrix;
+    }
+
+    /**
+     * Create a matrix describing a translation
+     *
+     * @param t the translation vector
+     * @return a matrix describing the translation
+     */
+    public static Mat4 translation(Vec3 t) {
+        return translation(t.v[Vec3.X], t.v[Vec3.Y], t.v[Vec3.Z]);
+    }
+
+    public static Mat4 scaling(float xScale, float yScale, float zScale) {
+        Mat4 matrix = new Mat4();
+
+        float[] m = matrix.m;
+        m[M00] = xScale;
+        m[M11] = yScale;
+        m[M22] = zScale;
+        m[M33] = 1f;
+
+        return matrix;
+    }
+
+    public static Mat4 scaling(Vec3 s) {
+        return scaling(s.v[Vec3.X], s.v[Vec3.Y], s.v[Vec3.Z]);
+    }
+
+    public static Mat4 perspectiveProjection(float fieldOfView, float aspectRatio) {
+        float fFrustumScale = (float) (1.0 / Math.tan(0.5 * fieldOfView * Math.PI / 180.0));
+        float fzNear = 0.5f;
+        float fzFar = 100.0f;
+
+        Mat4 perspectiveMatrix = new Mat4();
+
+        perspectiveMatrix.m[0] = fFrustumScale / aspectRatio;
+        perspectiveMatrix.m[5] = fFrustumScale;
+        perspectiveMatrix.m[10] = (fzFar + fzNear) / (fzNear - fzFar);
+        perspectiveMatrix.m[14] = (2 * fzFar * fzNear) / (fzNear - fzFar);
+        perspectiveMatrix.m[11] = -1.0f;
+
+        return perspectiveMatrix;
     }
 }
