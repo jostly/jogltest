@@ -30,7 +30,7 @@ public class Mat2Test {
         Mat2 theClone = a.clone();
         assertThat(theClone, is(a));
         assertThat("A clone should not be the same instance", theClone, is(not(sameInstance(a))));
-        a.identity();
+        a.setIdentity();
         assertThat("Modifying the original should not modify the clone", theClone, is(not(a)));
     }
 
@@ -41,7 +41,7 @@ public class Mat2Test {
 
     @Test
     public void identity() {
-        assertThat(a.identity(), is(new Mat2(1, 0, 0, 1)));
+        assertThat(a.setIdentity(), is(new Mat2(1, 0, 0, 1)));
     }
 
     @Test
@@ -94,8 +94,8 @@ public class Mat2Test {
     public void timing() {
         final Mat2 matrix = new Mat2();
 
-        System.out.println("identity() time = " +
-                time_in_millis(() -> { for(int i = 0; i < 1000000; i++) { matrix.identity(); }}) +
+        System.out.println("setIdentity() time = " +
+                time_in_millis(() -> { for(int i = 0; i < 1000000; i++) { matrix.setIdentity(); }}) +
                 " ms");
     }
 

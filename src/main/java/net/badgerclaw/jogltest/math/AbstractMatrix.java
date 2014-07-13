@@ -18,11 +18,11 @@ public abstract class AbstractMatrix<SelfType extends AbstractMatrix, D extends 
     }
 
     /**
-     * Set this matrix to the identity matrix
+     * Set this matrix to the setIdentity matrix
      *
      * @return this matrix object - the operation modifies the original object
      */
-    public SelfType identity() {
+    public SelfType setIdentity() {
         float[] m = this.m;
         int n = m.length;
         int s = dimensions() + 1;

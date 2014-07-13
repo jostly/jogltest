@@ -35,7 +35,7 @@ public class Mat3Test {
         Mat3 theClone = a.clone();
         assertThat(theClone, is(a));
         assertThat("A clone should not be the same instance", theClone, is(not(sameInstance(a))));
-        a.identity();
+        a.setIdentity();
         assertThat("Modifying the original should not modify the clone", theClone, is(not(a)));
     }
 
@@ -46,7 +46,7 @@ public class Mat3Test {
 
     @Test
     public void identity() {
-        assertThat(a.identity(), is(new Mat3(1, 0, 0, 0, 1, 0, 0, 0, 1)));
+        assertThat(a.setIdentity(), is(new Mat3(1, 0, 0, 0, 1, 0, 0, 0, 1)));
     }
 
     @Test

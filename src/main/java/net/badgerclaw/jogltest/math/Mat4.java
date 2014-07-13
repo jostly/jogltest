@@ -139,4 +139,39 @@ public class Mat4 extends AbstractMatrix<Mat4, Dimensionality4> implements Dimen
         return copyTo(new Mat4());
     }
 
+    public static Mat4 identity() {
+        return new Mat4().setIdentity();
+    }
+
+    public static Mat4 rotation(Vec3 axis, float angle) {
+        Mat4 matrix = new Mat4();
+        final float s = (float)Math.sin(angle);
+        final float c = (float)Math.cos(angle);
+        final float is = 1f - s;
+        final float ic = 1f - c;
+        final float[] v = axis.v;
+        final float x = v[Vec3.X];
+        final float x2 = x * x;
+        final float y = v[Vec3.Y];
+        final float y2 = y * y;
+        final float z = v[Vec3.Z];
+        final float z2 = z * z;
+        final float[] m = matrix.m;
+
+        m[M00] = x2 + (1 - x2)*c;
+        m[M01] = ic*x*y - z*s;
+        m[M02] = ic*x*z + y*s;
+
+        m[M10] = ic*x*y + z*s;
+        m[M11] = y2 + (1 - y2)*c;
+        m[M12] = ic*y*z - x*s;
+
+        m[M20] = ic*x*z - y*s;
+        m[M21] = ic*y*z + x*s;
+        m[M22] = z2 + (1 - z2)*c;
+
+        m[M33] = 1;
+
+        return matrix;
+    }
 }

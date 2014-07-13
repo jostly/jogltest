@@ -37,7 +37,7 @@ public class Mat2 extends AbstractMatrix<Mat2, Dimensionality2> implements Dimen
     }
 
     @Override
-    public Mat2 identity() {
+    public Mat2 setIdentity() {
         float[] m = this.m;
         m[M00] = 1f;
         m[M01] = 0f;

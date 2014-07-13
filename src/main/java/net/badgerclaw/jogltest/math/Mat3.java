@@ -40,7 +40,7 @@ public class Mat3 extends AbstractMatrix<Mat3, Dimensionality3> implements Dimen
     }
 
     @Override
-    public Mat3 identity() {
+    public Mat3 setIdentity() {
         float[] m = this.m;
         m[M00] = 1f;
         m[M01] = 0f;
